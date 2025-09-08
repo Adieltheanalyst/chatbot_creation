@@ -1,0 +1,81 @@
+{
+  "shop_info": {
+    "name": "Adiel's Coffee Corner",
+    "location": "123 Market Street, Nairobi",
+    "opening_hours": {
+      "monday": "7:00 AM - 7:00 PM",
+      "tuesday": "7:00 AM - 7:00 PM",
+      "wednesday": "7:00 AM - 7:00 PM",
+      "thursday": "7:00 AM - 7:00 PM",
+      "friday": "7:00 AM - 9:00 PM",
+      "saturday": "8:00 AM - 9:00 PM",
+      "sunday": "8:00 AM - 5:00 PM"
+    },
+    "contact": {
+      "phone": "+254-700-123456",
+      "email": "hello@adielscoffee.com"
+    }
+  },
+  "menu": {
+    "coffee": [
+      {
+        "item": "Espresso",
+        "price": "200 KES",
+        "description": "Strong, rich espresso shot."
+      },
+      {
+        "item": "Cappuccino",
+        "price": "300 KES",
+        "description": "Espresso with steamed milk and foam."
+      },
+      {
+        "item": "Latte",
+        "price": "320 KES",
+        "description": "Smooth espresso with steamed milk."
+      },
+      {
+        "item": "Mocha",
+        "price": "350 KES",
+        "description": "Espresso with chocolate and steamed milk."
+      }
+    ],
+    "tea": [
+      {
+        "item": "Chai Latte",
+        "price": "280 KES",
+        "description": "Spiced tea with milk."
+      },
+      {
+        "item": "Green Tea",
+        "price": "200 KES",
+        "description": "Refreshing hot green tea."
+      }
+    ],
+    "pastries": [
+      {
+        "item": "Croissant",
+        "price": "150 KES",
+        "description": "Buttery and flaky French pastry."
+      },
+      {
+        "item": "Muffin",
+        "price": "180 KES",
+        "description": "Blueberry or chocolate chip muffin."
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "Do you offer delivery?",
+      "answer": "Yes, we deliver within Nairobi via Glovo and UberEats."
+    },
+    {
+      "question": "Do you have vegan options?",
+      "answer": "Yes, we offer soy and oat milk alternatives."
+    },
+    {
+      "question": "Do you provide free Wi-Fi?",
+      "answer": "Yes, free Wi-Fi is available for all customers."
+    }
+  ]
+}
