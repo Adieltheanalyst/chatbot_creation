@@ -1,50 +1,21 @@
-from sentence_transformers import SentenceTransformer
-from pypdf import PdfReader
 import numpy as np
 import ollama
 
-def split_pages_into_chunks(text,max_length=300,overlap=50):
-    chunks=[]
-    start=0
-    while start<len(text):
-        end=start+max_length
-        chunks.append(text[start:end])
-        start=end-overlap
-    return chunks
+embeddings=np.load("embeddings.npy")
 
-def extraction_from_pdf(path,max_length=300, overlap=50):
+with open("chunks.txt", "r", encoding="utf-8") as f:
+    chunks = [line.strip() for line in f if line.strip()]
 
-    content=""
-    reader= PdfReader(path)
-    all_chunks=[]
-    for page_num,page in enumerate(reader.pages,start=0):
-        text=page.extract_text()
-        content += text
-    page_chunks = split_pages_into_chunks(content.strip())
-    all_chunks.extend(page_chunks)
+from sentence_transformers import SentenceTransformer
+model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder="./models")
 
-    return all_chunks
-
-chunks = extraction_from_pdf("coffe_shop_details.pdf", max_length=300, overlap=50)
-
-model=SentenceTransformer("all-MiniLM-L6-v2", cache_folder="./models")
-embeddings= model.encode(chunks, convert_to_numpy=True)
-
-np.save("embeddings.npy",embeddings)
-with open("chunks.txt","w",encoding="utf-8") as f:
-    for c in chunks:
-        f.write(c + "\n")
-
-def search(query,top_k=2):
+def search(query,top_k=5):
     query_vec=model.encode([query], convert_to_numpy=True)
     query_vec=query_vec/np.linalg.norm(query_vec)
     doc_vecs=embeddings/np.linalg.norm(embeddings,axis=1,keepdims=True)
     scores = np.dot(doc_vecs,query_vec.T).flatten()
     top_ids=np.argsort(-scores)[:top_k]
     results=[(chunks[i], float(scores[i])) for i in top_ids]
-    print("\nUser:",query)
-    # for r in results:
-    #     print("Bot (relevant info):", r[0])
     return results[:top_k]
 
 
@@ -52,7 +23,9 @@ def search(query,top_k=2):
 def ask_ollama(retrived_chunks, user_question):
     messages = [
         {"role": "system", "content": """
-        You are a friendly and conversational assistant.
+        You are a friendly,conversational and official or Adiel's coffee Corner.
+        Always speak in the first person plural ("we", "our") as if you are representing the café directly.
+        Keep answers friendly, concise, and welcoming.
         Use the provided context to answer the question naturally.
         Do not mention 'context' in your answer.
         If the answer is not in the context, simply say
@@ -60,17 +33,19 @@ def ask_ollama(retrived_chunks, user_question):
         """},
         {"role": "user", "content": f"""
         CONTEXT:
-        {retrived_chunks}
-
-        QUESTION:
-        {user_question}
+        {retrived_chunks}\n\nQUESTION:{user_question}
         """}
     ]
 
-    response = ollama.chat(model="mistral", messages=messages)
+    response = ollama.chat(model="phi:2.7b", messages=messages)
     return response["message"]["content"]
 
-question="What is the opening time on saturday?"
-retrived_chunks=search(question)
-print(ask_ollama(retrived_chunks, question))
+
+while True:
+    question=input("\nYou: ")
+    if question .lower() in ["quit","exit"]:
+        break
+    retrived_chunks = search(question)
+    answer= ask_ollama(retrived_chunks,question)
+    print("Bot:", answer)
 
