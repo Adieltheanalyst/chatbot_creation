@@ -1,19 +1,36 @@
-import fitz  # PyMuPDF
+from sentence_transformers import SentenceTransformer
+from pypdf import PdfReader
+import numpy as np
 
-pdf_path = r"C:\Users\gacha\PycharmProjects\chatbot\coffe_shop_details.pdf"
+def split_pages_into_chunks(text,max_length=300,overlap=50):
+    chunks=[]
+    start=0
+    while start<len(text):
+        end=start+max_length
+        chunks.append(text[start:end])
+        start=end-overlap
+    return chunks
 
-# Open the PDF
-doc = fitz.open(pdf_path)
+def extraction_from_pdf(path,max_length=300, overlap=50):
 
-# Extract all text at once
-full_text = doc.get_toc("text")  # This gets the whole text of the PDF in reading order
+    content=""
+    reader= PdfReader(path)
+    all_chunks=[]
+    for page_num,page in enumerate(reader.pages,start=0):
+        text=page.extract_text()
+        content += text
+    page_chunks = split_pages_into_chunks(content.strip())
+    all_chunks.extend(page_chunks)
 
-# Split into paragraphs
-# Assuming paragraphs are separated by at least one blank line
-paragraphs = [p.strip() for p in full_text.split('\n\n') if p.strip()]
+    return all_chunks
 
-# Print example paragraphs
-for i, para in enumerate(paragraphs):
-    print(f"--- Paragraph {i+1} ---")
-    print(para)
-    print()
+chunks = extraction_from_pdf("coffe_shop_details.pdf", max_length=300, overlap=50)
+
+model=SentenceTransformer("multi-qa-MiniLM-L6-cos-v1", cache_folder="./models")
+embeddings= model.encode(chunks, convert_to_numpy=True)
+
+np.save("embeddings.npy",embeddings)
+with open("chunks.txt","w",encoding="utf-8") as f:
+    for c in chunks:
+        f.write(c + "\n")
+print("✅ Preprocessing complete. Saved embeddings.npy and chunks.txt")
