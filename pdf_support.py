@@ -1,7 +1,7 @@
 from sentence_transformers import SentenceTransformer
 from pypdf import PdfReader
 import numpy as np
-
+import ollama
 
 def split_pages_into_chunks(text,max_length=300,overlap=50):
     chunks=[]
@@ -19,9 +19,9 @@ def extraction_from_pdf(path,max_length=300, overlap=50):
     all_chunks=[]
     for page_num,page in enumerate(reader.pages,start=0):
         text=page.extract_text()
-        if text:
-            page_chunks=split_pages_into_chunks(text.strip())
-            all_chunks.extend(page_chunks)
+        content += text
+    page_chunks = split_pages_into_chunks(content.strip())
+    all_chunks.extend(page_chunks)
 
     return all_chunks
 
@@ -45,6 +45,32 @@ def search(query,top_k=2):
     print("\nUser:",query)
     # for r in results:
     #     print("Bot (relevant info):", r[0])
-    return print(results[0])
+    return results[:top_k]
 
-print(search("What time does is the coffe shop open on sunday?"))
+
+
+def ask_ollama(retrived_chunks, user_question):
+    messages = [
+        {"role": "system", "content": """
+        You are a friendly and conversational assistant.
+        Use the provided context to answer the question naturally.
+        Do not mention 'context' in your answer.
+        If the answer is not in the context, simply say
+        something like "Hmm, I'm not sure about that."
+        """},
+        {"role": "user", "content": f"""
+        CONTEXT:
+        {retrived_chunks}
+
+        QUESTION:
+        {user_question}
+        """}
+    ]
+
+    response = ollama.chat(model="mistral", messages=messages)
+    return response["message"]["content"]
+
+question="What is the opening time on saturday?"
+retrived_chunks=search(question)
+print(ask_ollama(retrived_chunks, question))
+
