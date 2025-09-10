@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer
 
 
 def search(query,top_k=5):
-    local_model_path=r"C:\Users\gacha\PycharmProjects\chatbot\models\models--sentence-transformers--all-MiniLM-L6-v2\snapshots\c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+    local_model_path=r"models\models--sentence-transformers--all-MiniLM-L6-v2\snapshots\c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
     model=SentenceTransformer(local_model_path)
     query_vec = model.encode([query], convert_to_numpy=True)
     query_vec = query_vec/np.linalg.norm(query_vec)
