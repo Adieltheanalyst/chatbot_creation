@@ -4,3 +4,4 @@ numpy
 ollama
 streamlit
 groq
+dotenv
