@@ -3,3 +3,4 @@ sentence_transformers
 numpy
 ollama
 streamlit
+groq
