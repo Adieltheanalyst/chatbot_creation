@@ -1,7 +1,11 @@
 import numpy as np
 import ollama
 import streamlit as st
-from transformers import pipeline, AutoTokenizer,AutoModel
+import os
+from groq import Groq
+from dotenv import load_dotenv
+load_dotenv()
+# from transformers import pipeline, AutoTokenizer,AutoModel
 embeddings=np.load("embeddings.npy")
 
 with open("chunks.txt", "r", encoding="utf-8") as f:
@@ -21,9 +25,9 @@ def search(query,top_k=5):
     results = [(chunks[i], float(scores[i])) for i in top_ids]
     return results[:top_k]
 
-
-
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def ask_ollama(retrived_chunks, user_question):
+    context_text = "\n".join([chunk for chunk, score in retrived_chunks])
     messages = [
         {"role": "system", "content": """
         You are a friendly,conversational and official or Adiel's coffee Corner.
@@ -36,12 +40,12 @@ def ask_ollama(retrived_chunks, user_question):
         """},
         {"role": "user", "content": f"""
         CONTEXT:
-        {retrived_chunks}\n\nQUESTION:{user_question}
+        {context_text}\n\nQUESTION:{user_question}
         """}
     ]
 
-    response = ollama.chat(model="phi:2.7b", messages=messages)
-    return response["message"]["content"]
+    response = client.chat.completions.create(model="gemma2-9b-it", messages=messages,temperature=0.3)
+    return response.choices[0].message.content
 
 
 # while True:
@@ -79,7 +83,7 @@ def send_message():
         )
         st.session_state.chat_active = False
     else:
-        st.session_state.messages.append({"role":"user","content":question})
+        # st.session_state.messages.append({"role":"user","content":question})
         retrived_chunks = search(question)
         answer= ask_ollama(retrived_chunks,question)
         st.session_state.messages.append({"role":"bot","content": answer})
